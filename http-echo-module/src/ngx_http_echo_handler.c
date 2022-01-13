@@ -6,17 +6,19 @@
 
 #include "ngx_http_echo_handler.h"
 
+static int ngx_hello_visited_times = 0;
+
 ngx_int_t
 ngx_http_echo_handler(ngx_http_request_t *r)
 {
     ngx_table_elt_t *h;
     ngx_int_t rc;
     ngx_http_echo_loc_conf_t *conf;
-    ngx_str_t *response;
-    ngx_buf_t *buf0;
-    ngx_buf_t *buf1;
-    ngx_chain_t *out0;
-    ngx_chain_t *out1;
+    ngx_chain_t out;
+    ngx_buf_t *buf;
+
+    ngx_uint_t content_length     = 0;
+    u_char response_message[1024] = { 0 };
 
     if (!(r->method & (NGX_HTTP_GET | NGX_HTTP_HEAD))) {
         return NGX_HTTP_NOT_ALLOWED;
@@ -30,77 +32,54 @@ ngx_http_echo_handler(ngx_http_request_t *r)
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_echo_module);
 
-    response = ngx_palloc(r->pool, sizeof(ngx_str_t));
 
-    if (conf->message.len > 0) {
-        response->len  = conf->message.len;
-        response->data = conf->message.data;
+    if (conf->message.len == 0) {
+        ngx_log_error(NGX_LOG_EMERG, r->connection->log, 0, "message is empty!");
+        return NGX_DECLINED;
+    }
+
+    if (conf->counter == NGX_CONF_UNSET || conf->counter == 0) {
+        ngx_sprintf(response_message, "hi %s", conf->message.data);
     }
     else {
-        response->len  = sizeof("nginx") - 1;
-        response->data = (u_char *)"nginx";
+        ngx_sprintf(response_message, "hi %s, you have visited %d times", conf->message.data, ++ngx_hello_visited_times);
     }
 
-    debug_print_ngx_str_t(response);
+    content_length = ngx_strlen(response_message);
 
-    ngx_str_t body_prefix = ngx_string("hi, ");
-
-    buf0 = ngx_create_temp_buf(r->pool, body_prefix.len);
-    if (buf0 == NULL) {
+    buf = ngx_palloc(r->pool, sizeof(ngx_buf_t));
+    if (buf == NULL) {
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
-    ngx_memcpy(buf0->pos, body_prefix.data, body_prefix.len);
-    buf0->last     = buf0->pos + body_prefix.len;
-    buf0->last_buf = 0;
+    /* 这里比较牛逼，直接用内存地址 */
+    buf->pos      = response_message;
+    buf->last     = response_message + content_length;
+    buf->memory   = 1; /* this buffer is in memory */
+    buf->last_buf = 1; /* this is the last buffer in the buffer chain */
 
-    ngx_str_t type                  = ngx_string("text/plain");
-    r->headers_out.status           = NGX_HTTP_OK;
-    r->headers_out.content_length_n = response->len + body_prefix.len;
-    r->headers_out.content_type     = type;
+    out.buf  = buf;
+    out.next = NULL;
 
-    /* 添加一个自定义头 */
-    h = ngx_list_push(&r->headers_out.headers);
+
+    ngx_str_set(&r->headers_out.content_type, "text/html"); /* setup content type */
+    r->headers_out.status           = NGX_HTTP_OK;          /* setup status code */
+    r->headers_out.content_length_n = content_length;       /* setup content length */
+
+    h = ngx_list_push(&r->headers_out.headers); /* append custom header */
     if (h == NULL) {
         return NGX_ERROR;
     }
 
-    h->hash = 1;
-    ngx_str_set(&h->key, "x-request-from-app-name");
-    ngx_str_set(&h->value, "just test");
-
-    // 发送header
+    /* send the headers of your response */
     rc = ngx_http_send_header(r);
+
     if (rc == NGX_ERROR || rc > NGX_OK || r->header_only) {
         return rc;
     }
 
-    // 初始化buffer1
-    buf1 = ngx_create_temp_buf(r->pool, response->len);
-    if (buf1 == NULL) {
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
-    }
-
-    ngx_memcpy(buf1->pos, response->data, response->len);
-    buf1->last     = buf1->pos + response->len;
-    buf1->last_buf = 1;
-
-    out0 = ngx_alloc_chain_link(r->pool);
-    if (out0 == NULL) {
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
-    }
-
-    out1 = ngx_alloc_chain_link(r->pool);
-    if (out1 == NULL) {
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
-    }
-    out0->buf  = buf0;
-    out0->next = out1;
-
-    out1->buf  = buf1;
-    out1->next = NULL;
-
-    return ngx_http_output_filter(r, out0);
+    /* send the buffer chain of your response */
+    return ngx_http_output_filter(r, &out);
 }
 
 ngx_int_t

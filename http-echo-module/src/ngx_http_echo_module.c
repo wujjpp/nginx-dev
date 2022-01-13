@@ -12,6 +12,7 @@ static ngx_int_t ngx_http_echo_post_conf(ngx_conf_t *cf);
 static void *ngx_http_echo_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_echo_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 static char *ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char *ngx_http_hello_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_http_echo_commands[] = {
 
@@ -34,6 +35,13 @@ static ngx_command_t ngx_http_echo_commands[] = {
       ngx_conf_set_flag_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_echo_loc_conf_t, allow),
+      NULL },
+
+    { ngx_string("hello_counter"),
+      NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
+      ngx_http_hello_counter,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_echo_loc_conf_t, counter),
       NULL },
 
     ngx_null_command
@@ -94,6 +102,20 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     return NGX_CONF_OK;
 }
 
+static char *
+ngx_http_hello_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+{
+    ngx_http_echo_loc_conf_t *local_conf = conf;
+
+    char *rv = NULL;
+
+    rv = ngx_conf_set_flag_slot(cf, cmd, conf);
+
+    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "hello_counter:%d", local_conf->counter);
+
+    return rv;
+}
+
 static void *
 ngx_http_echo_create_loc_conf(ngx_conf_t *cf)
 {
@@ -108,7 +130,8 @@ ngx_http_echo_create_loc_conf(ngx_conf_t *cf)
 
     ngx_str_null(&conf->message);
 
-    conf->allow = NGX_CONF_UNSET;
+    conf->allow   = NGX_CONF_UNSET;
+    conf->counter = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -123,6 +146,7 @@ ngx_http_echo_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 
     ngx_conf_merge_str_value(conf->message, prev->message, "message from ngx_http_echo_merge_loc_conf");
     ngx_conf_merge_off_value(conf->allow, prev->allow, 0);
+    ngx_conf_merge_off_value(conf->counter, prev->counter, 0);
 
     return NGX_CONF_OK;
 }

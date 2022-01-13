@@ -43,7 +43,7 @@ ngx_http_echo_handler(ngx_http_request_t *r)
 
     debug_print_ngx_str_t(response);
 
-    ngx_str_t body_prefix = ngx_string("Hi, ");
+    ngx_str_t body_prefix = ngx_string("hi, ");
 
     buf0 = ngx_create_temp_buf(r->pool, body_prefix.len);
     if (buf0 == NULL) {

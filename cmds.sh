@@ -11,6 +11,4 @@
   --add-module=/root/nginx-dev/nginx-module-vts \
   --add-dynamic-module=/root/nginx-dev/http-echo-module
 
-./auto/configure \
-  --with-stream \
-  --add-dynamic-module=/root/nginx-dev/http-echo-module
+./auto/configure --add-dynamic-module=/root/nginx-dev/http-echo-module

@@ -47,6 +47,26 @@ ngx_http_echo_handler(ngx_http_request_t *r)
 
     content_length = ngx_strlen(response_message);
 
+    /* we response to 'GET' and 'HEAD' requests only */
+    if (!(r->method & (NGX_HTTP_GET | NGX_HTTP_HEAD))) {
+        return NGX_HTTP_NOT_ALLOWED;
+    }
+
+    /* discard request body, since we don't need it here */
+    rc = ngx_http_discard_request_body(r);
+
+    if (rc != NGX_OK) {
+        return rc;
+    }
+
+    /* send the header only, if the request type is http 'HEAD' */
+    if (r->method == NGX_HTTP_HEAD) {
+        r->headers_out.status           = NGX_HTTP_OK;
+        r->headers_out.content_length_n = content_length;
+
+        return ngx_http_send_header(r);
+    }
+
     buf = ngx_palloc(r->pool, sizeof(ngx_buf_t));
     if (buf == NULL) {
         return NGX_HTTP_INTERNAL_SERVER_ERROR;

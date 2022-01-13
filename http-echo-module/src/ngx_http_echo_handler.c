@@ -71,6 +71,10 @@ ngx_http_echo_handler(ngx_http_request_t *r)
         return NGX_ERROR;
     }
 
+    h->hash = 1;
+    ngx_str_set(&h->key, "x-request-from-app-name");
+    ngx_str_set(&h->value, "just test");
+
     /* send the headers of your response */
     rc = ngx_http_send_header(r);
 

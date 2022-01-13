@@ -19,7 +19,7 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_command_t ngx_http_echo_commands[] = {
 
     { ngx_string("proxy_hello"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,
+      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
       ngx_http_proxy_hello,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
@@ -73,6 +73,12 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     clcf          = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
     clcf->handler = ngx_http_echo_handler;
+
+    ngx_str_t *value, *url;
+    value = cf->args->elts;
+    url   = &value[1];
+
+    debug_print_ngx_str_t(url);
 
     return NGX_CONF_OK;
 }

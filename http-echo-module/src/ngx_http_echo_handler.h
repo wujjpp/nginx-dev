@@ -9,4 +9,6 @@
 
 ngx_int_t ngx_http_echo_handler(ngx_http_request_t *r);
 
+ngx_int_t ngx_http_echo_access_handler(ngx_http_request_t *r);
+
 #endif

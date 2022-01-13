@@ -1,0 +1,6 @@
+[submodule "nginx"]
+	path = nginx
+	url = ./nginx/
+[submodule "njs"]
+	path = njs
+	url = ./njs/

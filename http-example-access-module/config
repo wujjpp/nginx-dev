@@ -2,13 +2,11 @@ ngx_addon_name=ngx_http_example_access_module
 
 EXAMPLE_ACCESS_SRCS="                                                         \
                 $ngx_addon_dir/src/ngx_http_example_access_module.c            \
-                $ngx_addon_dir/src/ngx_http_example_access_handler.c                    \
                 "
 
 EXAMPLE_ACCESS_DEPS="                                                          \
-                $ngx_addon_dir/src/ddebug.h                                      \
+                $ngx_addon_dir/src/ddebug.h                                     \
                 $ngx_addon_dir/src/ngx_http_example_access_module.h              \
-                $ngx_addon_dir/src/ngx_http_example_access_handler.h                      \
                 "
 
 if test -n "$ngx_module_link"; then

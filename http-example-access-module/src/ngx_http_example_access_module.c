@@ -4,7 +4,6 @@
 
 #include "ddebug.h"
 
-#include "ngx_http_example_access_handler.h"
 #include "ngx_http_example_access_module.h"
 
 static ngx_int_t ngx_http_example_access_init(ngx_conf_t *cf);
@@ -12,13 +11,15 @@ static ngx_int_t ngx_http_example_access_init(ngx_conf_t *cf);
 static void *ngx_http_example_access_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_example_access_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
+static ngx_int_t ngx_http_example_access_handler(ngx_http_request_t *r);
+
 static ngx_command_t ngx_http_example_access_commands[] = {
 
-    { ngx_string("example_access_allow"),
+    { ngx_string("example_access_deny"),
       NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
       ngx_conf_set_flag_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_access_loc_conf_t, allow),
+      offsetof(ngx_http_example_access_loc_conf_t, deny),
       NULL },
 
     ngx_null_command
@@ -65,7 +66,7 @@ ngx_http_example_access_create_loc_conf(ngx_conf_t *cf)
         return NGX_CONF_ERROR;
     }
 
-    conf->allow = NGX_CONF_UNSET;
+    conf->deny = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -78,7 +79,7 @@ ngx_http_example_access_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child
     ngx_http_example_access_loc_conf_t *prev = parent;
     ngx_http_example_access_loc_conf_t *conf = child;
 
-    ngx_conf_merge_off_value(conf->allow, prev->allow, 0);
+    ngx_conf_merge_off_value(conf->deny, prev->deny, 0);
 
     return NGX_CONF_OK;
 }
@@ -115,4 +116,16 @@ ngx_http_example_access_init(ngx_conf_t *cf)
     debug_print_ngx_str_t("command name: %s", command_name);
 
     return NGX_OK;
+}
+
+static ngx_int_t
+ngx_http_example_access_handler(ngx_http_request_t *r)
+{
+    ngx_http_example_access_loc_conf_t *conf;
+
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_example_access_module);
+    if (!conf->deny)
+        return NGX_OK;
+
+    return NGX_HTTP_FORBIDDEN;
 }

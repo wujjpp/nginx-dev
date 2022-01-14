@@ -11,7 +11,7 @@ static void *ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_example_handle_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
 static char *ngx_http_example_handler_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-static char *ngx_http_example_handler_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char *ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_http_example_handle_commands[] = {
 
@@ -22,16 +22,16 @@ static ngx_command_t ngx_http_example_handle_commands[] = {
       0,
       NULL },
 
-    { ngx_string("example_handler_message"),
+    { ngx_string("example_handler_set_message"),
       NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_example_handler_loc_conf_t, message),
       NULL },
 
-    { ngx_string("example_handler_counter"),
+    { ngx_string("example_handler_enable_counter"),
       NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
-      ngx_http_example_handler_counter,
+      ngx_http_example_handler_enable_counter,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_example_handler_loc_conf_t, counter),
       NULL },
@@ -95,7 +95,7 @@ ngx_http_example_handler_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 static char *
-ngx_http_example_handler_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
     ngx_http_example_handler_loc_conf_t *local_conf = conf;
 

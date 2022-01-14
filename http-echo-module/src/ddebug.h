@@ -15,13 +15,13 @@
 
 #if defined(DDEBUG) && (DDEBUG)
 
-#    define debug_print_ngx_str_t(str)               \
-        {                                            \
-            u_char buffer[1024];                     \
-            ngx_memzero(buffer, sizeof(buffer));     \
-            ngx_memcpy(buffer, str->data, str->len); \
-            ngx_write_stdout((char *)buffer);        \
-            ngx_write_stdout("\n");                  \
+#    define debug_print_ngx_str_t(fmt, str)              \
+        {                                                \
+            u_char buffer[1024] = { 0 };                 \
+            ngx_memcpy(buffer, (str)->data, (str)->len); \
+            ngx_sprintf(buffer, fmt, (str)->data);       \
+            ngx_write_stdout((char *)buffer);            \
+            ngx_write_stdout("\n");                      \
         }
 
 #    define debug_print_str(str)    \
@@ -32,7 +32,7 @@
 
 #else
 
-#    define debug_print_ngx_str_t(str)
+#    define debug_print_ngx_str_t(fmt, str)
 #    define debug_print_str(str)
 
 #endif

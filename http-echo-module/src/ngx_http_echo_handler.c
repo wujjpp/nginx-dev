@@ -24,6 +24,22 @@ ngx_http_echo_handler(ngx_http_request_t *r)
         return NGX_HTTP_NOT_ALLOWED;
     }
 
+    /* ======================= 测试代码开始 =======================
+     * 下面的代码只是把请求的http协议的路径转化成一个文件系统的路径
+     * 代码来自 nginx/src/http/modules/ngx_http_static_module.c#L77-83
+     */
+    size_t root;
+    ngx_str_t path;
+    u_char *last;
+    last = ngx_http_map_uri_to_path(r, &path, &root, 0); /* /hello 转换成 /usr/local/nginx/html/hello */
+    if (last == NULL) {
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+    path.len = last - path.data;
+    debug_print_ngx_str_t("uri -> path: %s", &path);
+    /* ======================= 测试代码开始 ======================= */
+
+    /* 不需要 request body */
     rc = ngx_http_discard_request_body(r);
 
     if (rc != NGX_OK) {

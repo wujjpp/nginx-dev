@@ -97,7 +97,7 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    debug_print_ngx_str_t(command_name);
+    debug_print_ngx_str_t("%s", command_name);
 
     return NGX_CONF_OK;
 }
@@ -161,7 +161,7 @@ ngx_http_echo_pre_conf(ngx_conf_t *cf)
 static ngx_int_t
 ngx_http_echo_post_conf(ngx_conf_t *cf)
 {
-    debug_print_str("ngx_http_echo_post_conf - 也可以在这里设置handler，假如不需要参数的话");
+    debug_print_str("ngx_http_echo_post_conf - also you can setup handler here");
 
     ngx_http_handler_pt *h;
     ngx_http_core_main_conf_t *cmcf;
@@ -176,17 +176,18 @@ ngx_http_echo_post_conf(ngx_conf_t *cf)
 
     *h = ngx_http_echo_access_handler;
 
-    // /*
-    // cf: 该参数里面保存从配置文件读取到的原始字符串以及相关的一些信息。
-    //     特别注意的是这个参数的args字段是一个ngx_str_t类型的数组，该数组的首个元素是这个配置指令本身，
-    //     第二个元素是指令的第一个参数，第三个元素是第二个参数，依次类推。
-    // */
-    // ngx_str_t *value, *command_name;
+    /*
+    cf: 该参数里面保存从配置文件读取到的原始字符串以及相关的一些信息。
+        特别注意的是这个参数的args字段是一个ngx_str_t类型的数组，该数组的首个元素是这个配置指令本身，
+        第二个元素是指令的第一个参数，第三个元素是第二个参数，依次类推。
+    */
 
-    // value        = cf->args->elts;
-    // command_name = &value[0];
+    ngx_str_t *value, *command_name;
 
-    // debug_print_ngx_str_t(command_name);
+    value        = cf->args->elts;
+    command_name = &value[0];
+
+    debug_print_ngx_str_t("command namd: %s", command_name);
 
     return NGX_OK;
 }

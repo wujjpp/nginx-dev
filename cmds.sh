@@ -11,6 +11,10 @@
   --add-module=/root/nginx-dev/nginx-module-vts \
   --add-dynamic-module=/root/nginx-dev/http-echo-module
 
-./auto/configure --add-dynamic-module=/root/nginx-dev/http-echo-module
+./auto/configure \
+  --add-module=/root/nginx-dev/http-echo-module \
+  --add-module=/root/nginx-dev/http-example-filter-module
 
-./auto/configure --add-dynamic-module=/root/nginx-dev/http-echo-module --add-dynamic-module=/root/nginx-dev/http-example-filter-module
+./auto/configure \
+  --add-dynamic-module=/root/nginx-dev/http-echo-module \
+  --add-dynamic-module=/root/nginx-dev/http-example-filter-module

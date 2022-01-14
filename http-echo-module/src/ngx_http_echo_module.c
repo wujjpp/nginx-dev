@@ -79,7 +79,7 @@ ngx_module_t ngx_http_echo_module = {
 static char *
 ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    debug_print_str("ngx_http_proxy_hello called");
+    debug_print_str("lifecycle: ngx_http_proxy_hello called");
 
     ngx_http_core_loc_conf_t *clcf;
 
@@ -97,7 +97,7 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    debug_print_ngx_str_t("%s", command_name);
+    debug_print_ngx_str_t("command name: %s", command_name);
 
     return NGX_CONF_OK;
 }
@@ -119,7 +119,7 @@ ngx_http_hello_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 static void *
 ngx_http_echo_create_loc_conf(ngx_conf_t *cf)
 {
-    debug_print_str("ngx_http_echo_create_loc_conf called");
+    debug_print_str("lifecycle: ngx_http_echo_create_loc_conf called");
 
     ngx_http_echo_loc_conf_t *conf;
 
@@ -139,7 +139,7 @@ ngx_http_echo_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_echo_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    debug_print_str("ngx_http_echo_merge_loc_conf called");
+    debug_print_str("lifecycle: ngx_http_echo_merge_loc_conf called");
 
     ngx_http_echo_loc_conf_t *prev = parent;
     ngx_http_echo_loc_conf_t *conf = child;
@@ -154,14 +154,14 @@ ngx_http_echo_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 static ngx_int_t
 ngx_http_echo_pre_conf(ngx_conf_t *cf)
 {
-    debug_print_str("ngx_http_echo_pre_conf");
+    debug_print_str("lifecycle: ngx_http_echo_pre_conf");
     return NGX_OK;
 }
 
 static ngx_int_t
 ngx_http_echo_post_conf(ngx_conf_t *cf)
 {
-    debug_print_str("ngx_http_echo_post_conf - also you can setup handler here");
+    debug_print_str("lifecycle: ngx_http_echo_post_conf - also you can setup handler here");
 
     ngx_http_handler_pt *h;
     ngx_http_core_main_conf_t *cmcf;
@@ -187,7 +187,7 @@ ngx_http_echo_post_conf(ngx_conf_t *cf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    debug_print_ngx_str_t("command namd: %s", command_name);
+    debug_print_ngx_str_t("command name: %s", command_name);
 
     return NGX_OK;
 }

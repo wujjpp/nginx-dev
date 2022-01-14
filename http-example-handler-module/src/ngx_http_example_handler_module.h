@@ -11,7 +11,6 @@
 
 typedef struct {
     ngx_str_t message;
-    ngx_flag_t allow;
     ngx_flag_t counter;
 } ngx_http_example_handler_loc_conf_t;
 

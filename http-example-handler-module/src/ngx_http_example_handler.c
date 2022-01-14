@@ -4,16 +4,16 @@
 
 #include "ddebug.h"
 
-#include "ngx_http_echo_handler.h"
+#include "ngx_http_example_handler.h"
 
 static int ngx_hello_visited_times = 0;
 
 ngx_int_t
-ngx_http_echo_handler(ngx_http_request_t *r)
+ngx_http_example_handle_handler(ngx_http_request_t *r)
 {
     ngx_table_elt_t *h;
     ngx_int_t rc;
-    ngx_http_echo_loc_conf_t *conf;
+    ngx_http_example_handler_loc_conf_t *conf;
     ngx_chain_t out;
     ngx_buf_t *buf;
 
@@ -46,7 +46,7 @@ ngx_http_echo_handler(ngx_http_request_t *r)
         return rc;
     }
 
-    conf = ngx_http_get_module_loc_conf(r, ngx_http_echo_module);
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_example_handler_module);
 
 
     if (conf->message.len == 0) {
@@ -123,11 +123,11 @@ ngx_http_echo_handler(ngx_http_request_t *r)
 }
 
 ngx_int_t
-ngx_http_echo_access_handler(ngx_http_request_t *r)
+ngx_http_example_handle_access_handler(ngx_http_request_t *r)
 {
-    ngx_http_echo_loc_conf_t *conf;
+    ngx_http_example_handler_loc_conf_t *conf;
 
-    conf = ngx_http_get_module_loc_conf(r, ngx_http_echo_module);
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_example_handler_module);
     if (conf->allow)
         return NGX_OK;
 

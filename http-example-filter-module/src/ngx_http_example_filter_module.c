@@ -6,20 +6,13 @@
 
 #include "ngx_http_example_filter_module.h"
 
-static ngx_int_t
-ngx_http_example_header_filter(ngx_http_request_t *r);
+static ngx_int_t ngx_http_example_filter_init(ngx_conf_t *cf);
 
-static ngx_int_t
-ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
+static ngx_int_t ngx_http_example_header_filter(ngx_http_request_t *r);
+static ngx_int_t ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
 
-static ngx_int_t
-ngx_http_example_filter_init(ngx_conf_t *cf);
-
-static void *
-ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf);
-
-static char *
-ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
+static void *ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf);
+static char *ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
 static ngx_command_t ngx_http_example_filter_commands[] = {
 

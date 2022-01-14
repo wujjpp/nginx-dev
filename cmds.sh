@@ -12,3 +12,5 @@
   --add-dynamic-module=/root/nginx-dev/http-echo-module
 
 ./auto/configure --add-dynamic-module=/root/nginx-dev/http-echo-module
+
+./auto/configure --add-dynamic-module=/root/nginx-dev/http-echo-module --add-dynamic-module=/root/nginx-dev/http-example-filter-module

@@ -97,7 +97,7 @@ ngx_http_proxy_hello(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    debug_print_ngx_str_t("command name: %s", command_name);
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "command name: %s", command_name->data);
 
     return NGX_CONF_OK;
 }

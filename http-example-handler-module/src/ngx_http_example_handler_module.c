@@ -10,14 +10,14 @@
 static void *ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_example_handle_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
-static char *ngx_http_example_handler_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char *ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_http_example_handle_commands[] = {
 
-    { ngx_string("example_handler_pass"),
+    { ngx_string("example_handler_response"),
       NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,
-      ngx_http_example_handler_pass,
+      ngx_http_example_handler_response,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
@@ -69,9 +69,9 @@ ngx_module_t ngx_http_example_handler_module = {
 };
 
 static char *
-ngx_http_example_handler_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    debug_print_str("lifecycle: ngx_http_example_handler_pass called");
+    debug_print_str("lifecycle: ngx_http_example_handler_response called");
 
     ngx_http_core_loc_conf_t *clcf;
 

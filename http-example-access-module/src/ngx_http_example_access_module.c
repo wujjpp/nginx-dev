@@ -3,9 +3,9 @@
  * Created by Wu Jian Ping on - 2022/01/13.
  */
 
-#include "ddebug.h"
 
 #include "ngx_http_example_access_module.h"
+
 
 static ngx_int_t ngx_http_example_access_init(ngx_conf_t *cf);
 
@@ -58,7 +58,7 @@ ngx_module_t ngx_http_example_access_module = {
 static void *
 ngx_http_example_access_create_loc_conf(ngx_conf_t *cf)
 {
-    debug_print_str("lifecycle: ngx_http_example_access_create_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_access_create_loc_conf called");
 
     ngx_http_example_access_loc_conf_t *conf;
 
@@ -75,7 +75,7 @@ ngx_http_example_access_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_example_access_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    debug_print_str("lifecycle: ngx_http_example_access_merge_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_access_merge_loc_conf called");
 
     ngx_http_example_access_loc_conf_t *prev = parent;
     ngx_http_example_access_loc_conf_t *conf = child;
@@ -88,7 +88,7 @@ ngx_http_example_access_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child
 static ngx_int_t
 ngx_http_example_access_init(ngx_conf_t *cf)
 {
-    debug_print_str("lifecycle: ngx_http_example_access_init called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_access_init called");
 
     ngx_http_handler_pt *h;
     ngx_http_core_main_conf_t *cmcf;
@@ -114,7 +114,7 @@ ngx_http_example_access_init(ngx_conf_t *cf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    debug_print_ngx_str_t("command name: %s", command_name);
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "command name: %s", command_name);
 
     return NGX_OK;
 }

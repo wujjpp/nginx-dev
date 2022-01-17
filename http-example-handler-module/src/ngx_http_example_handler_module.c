@@ -3,10 +3,9 @@
  * Created by Wu Jian Ping on - 2022/01/13.
  */
 
-#include "ddebug.h"
 
-#include "ngx_http_example_handler_handler.h"
 #include "ngx_http_example_handler_module.h"
+#include "ngx_http_example_handler_handler.h"
 
 static void *ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_example_handle_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
@@ -72,7 +71,7 @@ ngx_module_t ngx_http_example_handler_module = {
 static char *
 ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    debug_print_str("lifecycle: ngx_http_example_handler_response called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handler_response called");
 
     ngx_http_core_loc_conf_t *clcf;
 
@@ -98,13 +97,13 @@ ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
 static char *
 ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_http_example_handler_loc_conf_t *local_conf = conf;
+    // ngx_http_example_handler_loc_conf_t *local_conf = conf;
 
     char *rv = NULL;
 
     rv = ngx_conf_set_flag_slot(cf, cmd, conf);
 
-    ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "hello_counter:%d", local_conf->counter);
+    // ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "hello_counter:%d", local_conf->counter);
 
     return rv;
 }
@@ -112,7 +111,7 @@ ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void
 static void *
 ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf)
 {
-    debug_print_str("lifecycle: ngx_http_example_handle_create_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handle_create_loc_conf called");
 
     ngx_http_example_handler_loc_conf_t *conf;
 
@@ -131,7 +130,7 @@ ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_example_handle_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    debug_print_str("lifecycle: ngx_http_example_handle_merge_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handle_merge_loc_conf called");
 
     ngx_http_example_handler_loc_conf_t *prev = parent;
     ngx_http_example_handler_loc_conf_t *conf = child;

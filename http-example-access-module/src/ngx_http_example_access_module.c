@@ -114,7 +114,7 @@ ngx_http_example_access_init(ngx_conf_t *cf)
     value        = cf->args->elts;
     command_name = &value[0];
 
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "command name: %s", command_name);
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "command name: %s", command_name->data);
 
     return NGX_OK;
 }

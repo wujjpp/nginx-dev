@@ -12,7 +12,7 @@
 #include <ngx_http.h>
 
 typedef struct {
-    ngx_str_t redis_addr;
+    ngx_http_upstream_conf_t upstream;
 } ngx_http_redis_loc_conf_t;
 
 #endif

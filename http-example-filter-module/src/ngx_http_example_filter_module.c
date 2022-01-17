@@ -190,19 +190,16 @@ ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
     ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "liftcycle: ngx_http_example_body_filter called");
 
-    /* 当不存在prefix_message的是否，我们需要将in赋值给prefix_chain, 所以这里使用指针 */
-    ngx_chain_t *prefix_chain;
+    ngx_chain_t *chain_link = in;
+
+    ngx_chain_t prefix_chain;
     ngx_chain_t suffix_chain;
     ngx_buf_t *prefix_buf;
     ngx_buf_t *suffix_buf;
+
     ngx_http_example_filter_loc_conf_t *conf;
 
     conf = ngx_http_get_module_loc_conf(r, ngx_http_example_filter_module);
-
-    prefix_chain = ngx_palloc(r->pool, sizeof(ngx_chain_t));
-
-    if (prefix_chain == NULL)
-        return NGX_ERROR;
 
     if (conf->prefix_message.len > 0) {
         prefix_buf           = ngx_palloc(r->pool, sizeof(ngx_buf_t));
@@ -211,11 +208,10 @@ ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
         prefix_buf->memory   = 1;
         prefix_buf->last_buf = 1;
 
-        prefix_chain->buf  = prefix_buf;
-        prefix_chain->next = in;
-    }
-    else {
-        prefix_chain = in;
+        prefix_chain.buf  = prefix_buf;
+        prefix_chain.next = in;
+
+        chain_link = &prefix_chain;
     }
 
     if (conf->suffix_message.len > 0) {
@@ -230,5 +226,5 @@ ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
         suffix_chain.next = NULL;
     }
 
-    return ngx_http_next_body_filter(r, prefix_chain);
+    return ngx_http_next_body_filter(r, chain_link);
 }

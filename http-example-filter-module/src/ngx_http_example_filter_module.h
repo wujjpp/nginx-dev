@@ -10,7 +10,9 @@
 #include <ngx_http.h>
 
 typedef struct {
-    ngx_flag_t enable;
+    ngx_flag_t enable_header_filter;
+    ngx_str_t prefix_message;
+    ngx_str_t suffix_message;
 } ngx_http_example_filter_loc_conf_t;
 
 #endif

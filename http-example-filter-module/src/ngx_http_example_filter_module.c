@@ -65,17 +65,49 @@ ngx_http_example_header_filter(ngx_http_request_t *r)
 {
     ngx_log_error(NGX_LOG_NOTICE, r->pool->log, 0, "liftcycle: ngx_http_example_header_filter called");
 
-    ngx_table_elt_t *h;
+    ngx_table_elt_t *v;
+    ngx_uint_t i;
+    ngx_list_part_t *part;
 
-    /* 新增header */
-    h = ngx_list_push(&r->headers_out.headers); /* append custom header */
-    if (h == NULL) {
+    /* append header */
+    v = ngx_list_push(&r->headers_out.headers); /* append custom header */
+    if (v == NULL) {
         return NGX_ERROR;
     }
+    v->hash = 1;
+    ngx_str_set(&v->key, "x-request-from-app-name");
+    ngx_str_set(&v->value, "nodejs-qcc-backend-data");
 
-    h->hash = 1;
-    ngx_str_set(&h->key, "x-request-from-app-name");
-    ngx_str_set(&h->value, "just test");
+
+    /* iterate over the headers_out and remove or modify particular header */
+    ngx_str_t x_powered_by           = ngx_string("X-Powered-By");
+    ngx_str_t x_request_from_cluster = ngx_string("x-request-from-cluster");
+    part                             = &r->headers_out.headers.part;
+    v                                = part->elts;
+
+    for (i = 0; /* void */; i++) {
+        if (i >= part->nelts) {
+            if (part->next == NULL) {
+                break;
+            }
+            part = part->next;
+            v    = part->elts;
+            i    = 0;
+        }
+
+        /* print header */
+        ngx_log_error(NGX_LOG_NOTICE, r->pool->log, 0, "key:%s, value:%s", v[i].key.data, v[i].value.data);
+
+        /* remove x-powered-by */
+        if (ngx_strcasecmp(x_powered_by.data, v[i].key.data) == 0) {
+            v[i].hash = 0; /* remove header */
+        }
+
+        /* modify x-request-cluster */
+        if (ngx_strcasecmp(x_request_from_cluster.data, v[i].key.data) == 0) {
+            ngx_str_set(&v[i].value, "cluster-b-extended");
+        }
+    }
 
     return ngx_http_next_header_filter(r);
 }

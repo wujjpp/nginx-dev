@@ -103,7 +103,11 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
     r->headers_out.status           = NGX_HTTP_OK;          /* setup status code */
     r->headers_out.content_length_n = content_length;       /* setup content length */
 
-    h = ngx_list_push(&r->headers_out.headers); /* append custom header */
+    /*
+     * append custom header: x-powerd-by
+     * in the filter example, we will remove this header
+     */
+    h = ngx_list_push(&r->headers_out.headers);
     if (h == NULL) {
         return NGX_ERROR;
     }
@@ -111,6 +115,19 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
     h->hash = 1;
     ngx_str_set(&h->key, "x-powered-by");
     ngx_str_set(&h->value, "QCC");
+
+    /*
+     * append custom header: x-request-from-cluster
+     * in filter example, we will change this header
+     */
+    h = ngx_list_push(&r->headers_out.headers);
+    if (h == NULL) {
+        return NGX_ERROR;
+    }
+
+    h->hash = 1;
+    ngx_str_set(&h->key, "x-request-from-cluster");
+    ngx_str_set(&h->value, "cluster-a");
 
     /* send the headers of your response */
     rc = ngx_http_send_header(r);

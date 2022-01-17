@@ -36,9 +36,10 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
     path.len = last - path.data;
-    debug_print_ngx_str_t("uri -> path: %s", &path);
-    /* ======================= 测试代码开始 ======================= */
+    // debug_print_ngx_str_t("uri -> path: %s", &path);
+    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "uri -> path: %s", path.data);
 
+    /* ======================= 测试代码开始 ======================= */
     /* 不需要 request body */
     rc = ngx_http_discard_request_body(r);
 
@@ -108,8 +109,8 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
     }
 
     h->hash = 1;
-    ngx_str_set(&h->key, "x-request-from-app-name");
-    ngx_str_set(&h->value, "just test");
+    ngx_str_set(&h->key, "x-powered-by");
+    ngx_str_set(&h->value, "QCC");
 
     /* send the headers of your response */
     rc = ngx_http_send_header(r);

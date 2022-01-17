@@ -66,6 +66,22 @@ static ngx_int_t
 ngx_http_example_header_filter(ngx_http_request_t *r)
 {
     debug_print_str("liftcycle: ngx_http_example_header_filter called");
+
+    ngx_table_elt_t *h;
+
+    /* 新增header */
+    h = ngx_list_push(&r->headers_out.headers); /* append custom header */
+    if (h == NULL) {
+        return NGX_ERROR;
+    }
+
+    h->hash = 1;
+    ngx_str_set(&h->key, "x-request-from-app-name");
+    ngx_str_set(&h->value, "just test");
+
+    /*修改header*/
+    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "%s", "Hello");
+
     return ngx_http_next_header_filter(r);
 }
 

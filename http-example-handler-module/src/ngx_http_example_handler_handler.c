@@ -1,4 +1,5 @@
-/**
+
+/*
  * Created by Wu Jian Ping on - 2022/01/13.
  */
 
@@ -57,8 +58,7 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
 
     if (conf->counter == NGX_CONF_UNSET || conf->counter == 0) {
         ngx_sprintf(response_message, "hi %s", conf->message.data);
-    }
-    else {
+    } else {
         ngx_sprintf(response_message, "hi %s, you have visited %d times", conf->message.data, ++ngx_hello_visited_times);
     }
 

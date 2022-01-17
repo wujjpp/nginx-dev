@@ -5,7 +5,6 @@ EXAMPLE_FILTER_SRCS="                                                         \
                 "
 
 EXAMPLE_FILTER_DEPS="                                                         \
-                $ngx_addon_dir/src/ddebug.h                                 \
                 $ngx_addon_dir/src/ngx_http_example_filter_module.h            \
                 "
 

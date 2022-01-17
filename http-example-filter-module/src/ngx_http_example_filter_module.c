@@ -2,8 +2,6 @@
  * Created by Wu Jian Ping on - 2022/01/14.
  */
 
-#include "ddebug.h"
-
 #include "ngx_http_example_filter_module.h"
 
 static ngx_int_t ngx_http_example_filter_init(ngx_conf_t *cf);
@@ -65,7 +63,7 @@ static ngx_http_output_body_filter_pt ngx_http_next_body_filter;
 static ngx_int_t
 ngx_http_example_header_filter(ngx_http_request_t *r)
 {
-    debug_print_str("liftcycle: ngx_http_example_header_filter called");
+    ngx_log_error(NGX_LOG_NOTICE, r->pool->log, 0, "liftcycle: ngx_http_example_header_filter called");
 
     ngx_table_elt_t *h;
 
@@ -79,9 +77,6 @@ ngx_http_example_header_filter(ngx_http_request_t *r)
     ngx_str_set(&h->key, "x-request-from-app-name");
     ngx_str_set(&h->value, "just test");
 
-    /*修改header*/
-    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "%s", "Hello");
-
     return ngx_http_next_header_filter(r);
 }
 
@@ -89,14 +84,16 @@ ngx_http_example_header_filter(ngx_http_request_t *r)
 static ngx_int_t
 ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
-    debug_print_str("liftcycle: ngx_http_example_body_filter called");
+    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "liftcycle: ngx_http_example_body_filter called");
+
     return ngx_http_next_body_filter(r, in);
 }
 
 static ngx_int_t
 ngx_http_example_filter_init(ngx_conf_t *cf)
 {
-    debug_print_str("liftcycle: ngx_http_example_filter_init called");
+    ngx_log_debug0(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_init called");
+
     ngx_http_next_body_filter = ngx_http_top_body_filter;
     ngx_http_top_body_filter  = ngx_http_example_body_filter;
 
@@ -109,7 +106,8 @@ ngx_http_example_filter_init(ngx_conf_t *cf)
 static void *
 ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
 {
-    debug_print_str("liftcycle: ngx_http_example_filter_create_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_create_loc_conf called");
+
     ngx_http_example_filter_loc_conf_t *conf;
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_example_filter_loc_conf_t));
@@ -125,7 +123,7 @@ ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    debug_print_str("liftcycle: ngx_http_example_filter_merge_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_merge_loc_conf called");
 
     ngx_http_example_filter_loc_conf_t *prev = parent;
     ngx_http_example_filter_loc_conf_t *conf = child;

@@ -55,10 +55,52 @@ ngx_module_t ngx_http_example_filter_module = {
     NGX_MODULE_V1_PADDING
 };
 
-
 static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 static ngx_http_output_body_filter_pt ngx_http_next_body_filter;
 
+static ngx_int_t
+ngx_http_example_filter_init(ngx_conf_t *cf)
+{
+    ngx_log_debug0(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_init called");
+
+    ngx_http_next_body_filter = ngx_http_top_body_filter;
+    ngx_http_top_body_filter  = ngx_http_example_body_filter;
+
+    ngx_http_next_header_filter = ngx_http_top_header_filter;
+    ngx_http_top_header_filter  = ngx_http_example_header_filter;
+
+    return NGX_OK;
+}
+
+static void *
+ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
+{
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_create_loc_conf called");
+
+    ngx_http_example_filter_loc_conf_t *conf;
+
+    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_example_filter_loc_conf_t));
+    if (conf == NULL) {
+        return NULL;
+    }
+
+    conf->enable = NGX_CONF_UNSET;
+
+    return conf;
+}
+
+static char *
+ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
+{
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_merge_loc_conf called");
+
+    ngx_http_example_filter_loc_conf_t *prev = parent;
+    ngx_http_example_filter_loc_conf_t *conf = child;
+
+    ngx_conf_merge_off_value(conf->enable, prev->enable, 0);
+
+    return NGX_CONF_OK;
+}
 
 static ngx_int_t
 ngx_http_example_header_filter(ngx_http_request_t *r)
@@ -69,8 +111,8 @@ ngx_http_example_header_filter(ngx_http_request_t *r)
     ngx_uint_t i;
     ngx_list_part_t *part;
 
-    /* append header */
-    v = ngx_list_push(&r->headers_out.headers); /* append custom header */
+    /* append custom header */
+    v = ngx_list_push(&r->headers_out.headers);
     if (v == NULL) {
         return NGX_ERROR;
     }
@@ -119,48 +161,4 @@ ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
     ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "liftcycle: ngx_http_example_body_filter called");
 
     return ngx_http_next_body_filter(r, in);
-}
-
-static ngx_int_t
-ngx_http_example_filter_init(ngx_conf_t *cf)
-{
-    ngx_log_debug0(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_init called");
-
-    ngx_http_next_body_filter = ngx_http_top_body_filter;
-    ngx_http_top_body_filter  = ngx_http_example_body_filter;
-
-    ngx_http_next_header_filter = ngx_http_top_header_filter;
-    ngx_http_top_header_filter  = ngx_http_example_header_filter;
-
-    return NGX_OK;
-}
-
-static void *
-ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
-{
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_create_loc_conf called");
-
-    ngx_http_example_filter_loc_conf_t *conf;
-
-    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_example_filter_loc_conf_t));
-    if (conf == NULL) {
-        return NULL;
-    }
-
-    conf->enable = NGX_CONF_UNSET;
-
-    return conf;
-}
-
-static char *
-ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
-{
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_merge_loc_conf called");
-
-    ngx_http_example_filter_loc_conf_t *prev = parent;
-    ngx_http_example_filter_loc_conf_t *conf = child;
-
-    ngx_conf_merge_off_value(conf->enable, prev->enable, 0);
-
-    return NGX_CONF_OK;
 }

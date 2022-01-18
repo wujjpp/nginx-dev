@@ -15,6 +15,11 @@ typedef struct {
     ngx_http_upstream_conf_t upstream;
 } ngx_http_redis_loc_conf_t;
 
+typedef struct {
+    ngx_http_request_t *request;
+} ngx_http_redis_ctx_t;
+
+
 extern ngx_module_t ngx_http_redis_module;
 
 #endif

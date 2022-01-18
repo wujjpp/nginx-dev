@@ -177,5 +177,8 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         clcf->auto_redirect = 1;
     }
 
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "--------------------------------------------------");
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cf->pool->log, 0, "================================================");
+
     return NGX_CONF_OK;
 }

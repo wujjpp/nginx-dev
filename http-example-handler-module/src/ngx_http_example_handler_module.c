@@ -83,13 +83,14 @@ ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
     cf: 该参数里面保存从配置文件读取到的原始字符串以及相关的一些信息。
         特别注意的是这个参数的args字段是一个ngx_str_t类型的数组，该数组的首个元素是这个配置指令本身，
         第二个元素是指令的第一个参数，第三个元素是第二个参数，依次类推。
+        注意：在postconfiguration中对应值不一样
     */
     ngx_str_t *value, *command_name;
 
     value        = cf->args->elts;
     command_name = &value[0];
 
-    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "command name: %s", command_name->data);
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "directive: %s", command_name->data);
 
     return NGX_CONF_OK;
 }

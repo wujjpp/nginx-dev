@@ -3,8 +3,8 @@
  * Created by Wu Jian Ping on - 2022/01/14.
  */
 
-#ifndef _NGX_HTTP_EXAMPLE_FILTER_H_INCLUDED_
-#define _NGX_HTTP_EXAMPLE_FILTER_H_INCLUDED_
+#ifndef _NGX_HTTP_EXAMPLE_FILTER_MODULE_H_INCLUDED_
+#define _NGX_HTTP_EXAMPLE_FILTER_MODULE_H_INCLUDED_
 
 #include <ngx_config.h>
 #include <ngx_core.h>

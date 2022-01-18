@@ -5,6 +5,7 @@
 
 
 #include "ngx_http_redis_module.h"
+#include "ngx_http_redis_handler.h"
 
 
 static void *
@@ -14,10 +15,6 @@ ngx_http_redis_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
 static char *
 ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-
-static ngx_int_t
-ngx_http_redis_handler(ngx_http_request_t *r);
-
 
 static ngx_command_t ngx_http_redis_commands[] = {
     { ngx_string("redis_pass"),
@@ -181,18 +178,4 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     }
 
     return NGX_CONF_OK;
-}
-
-
-static ngx_int_t
-ngx_http_redis_handler(ngx_http_request_t *r)
-{
-    ngx_http_redis_loc_conf_t *conf;
-
-    conf = ngx_http_get_module_loc_conf(r, ngx_http_redis_module);
-
-    if (conf == NULL)
-        return NGX_HTTP_INTERNAL_SERVER_ERROR;
-
-    return NGX_HTTP_BAD_REQUEST;
 }

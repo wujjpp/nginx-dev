@@ -196,7 +196,7 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
             ngx_str_set(&mlcf->password, (u_char *)buffer);
 
-            // 这个是临时解决方案，先这么干，需要弄明白为什么 (u_char *)执行sizeof()得到的值不对
+            // TODO: 这个是临时解决方案，先这么干，需要弄明白为什么 (u_char *)执行sizeof()得到的值不对，需要研究一下
             mlcf->password.len = strlen((const char *)buffer);
         */
 

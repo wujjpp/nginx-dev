@@ -15,6 +15,11 @@ static ngx_int_t ngx_http_example_upstream_reinit_request(ngx_http_request_t *r)
 static void ngx_http_example_upstream_abort_request(ngx_http_request_t *r);
 static void ngx_http_example_upstream_finalize_request(ngx_http_request_t *r, ngx_int_t rc);
 
+/*
+ * 和普通的handler差不多，只是handler不再处理内容输出，改成由upstream来完成
+ * 主要通过 ngx_http_upstream_create 创建 upstream, 通过查看源码可以看出，这条函数不是实际意义上的创建连接，仅仅是创建了ngx_http_upstream_t结构体
+ * 设置将upstream的各个回调函数，最后通过调用 ngx_http_upstream_init 完成一系列后续操作
+ */
 ngx_int_t
 ngx_http_example_upstream_handler(ngx_http_request_t *r)
 {
@@ -41,6 +46,7 @@ ngx_http_example_upstream_handler(ngx_http_request_t *r)
     r->headers_out.content_type_len = content_type_header.len;
 
 
+    /* create ngx_http_upstream_t */
     if (ngx_http_upstream_create(r) != NGX_OK) {
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -55,10 +61,15 @@ ngx_http_example_upstream_handler(ngx_http_request_t *r)
 
     u->conf = &mlcf->upstream;
 
-    u->create_request   = ngx_http_example_upstream_create_request;
-    u->reinit_request   = ngx_http_example_upstream_reinit_request;
-    u->process_header   = ngx_http_example_upstream_process_header;
-    u->abort_request    = ngx_http_example_upstream_abort_request;
+    /* create_request crafts a request buffer (or chain of them) to be sent to the upstream */
+    u->create_request = ngx_http_example_upstream_create_request;
+    /* reinit_request is called if the connection to the back-end is reset (just before create_request is called for the second time) */
+    u->reinit_request = ngx_http_example_upstream_reinit_request;
+    /* process_header processes the first bit of the upstream’s response, and usually saves a pointer to the upstream’s "payload" */
+    u->process_header = ngx_http_example_upstream_process_header;
+    /* abort_request is called if the client aborts the request */
+    u->abort_request = ngx_http_example_upstream_abort_request;
+    /* finalize_request is called when Nginx is finished reading from the upstream */
     u->finalize_request = ngx_http_example_upstream_finalize_request;
 
     ctx = ngx_palloc(r->pool, sizeof(ngx_http_example_upstream_ctx_t));
@@ -68,11 +79,17 @@ ngx_http_example_upstream_handler(ngx_http_request_t *r)
 
     ctx->request = r;
 
+    /*
+     * 通过 ngx_http_set_ctx 函数将初始化好的结构体ctx, 设置在上下文中
+     * ngx_http_example_upstream_filter_init 和 ngx_http_example_upstream_filter函数在被调用时，第一个参数就是该对象
+     */
     ngx_http_set_ctx(r, ctx, ngx_http_example_upstream_module);
 
+    /* adjust content length, you can refer ngx_http_memcached module */
     u->input_filter_init = ngx_http_example_upstream_filter_init;
-    u->input_filter      = ngx_http_example_upstream_filter;
-    u->input_filter_ctx  = ctx;
+    /* input_filter is a body filter that can be called on the response body (e.g., to remove a trailer) */
+    u->input_filter     = ngx_http_example_upstream_filter;
+    u->input_filter_ctx = ctx;
 
     r->main->count++;
 
@@ -100,7 +117,7 @@ ngx_http_example_upstream_create_request(ngx_http_request_t *r)
         return NGX_ERROR;
     }
 
-    // 先写死一条命令
+    // TODO: 先写死一条命令, 需要改成从变量中获取
     ngx_str_set(&command, "get foo\r\n");
 
     b->pos    = command.data;
@@ -135,7 +152,11 @@ ngx_http_example_upstream_process_header(ngx_http_request_t *r)
         }
     }
 
-
+    /*
+     * 假如在已接收到的数据中不存在LF,我们认为redis尚未返回一行完成数据，
+     * NOTE: 这样描述有点不严谨，但是也找不到好的方式描述，先这么干，
+     * 可以去了解一下redis response data协议，不算复杂
+     */
     return NGX_AGAIN;
 
 found:
@@ -147,12 +168,35 @@ found:
     ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "response: %V", &s);
 
     switch (chr) {
-        case '+': // simple strings
-        case '-': // errors
-        case ':': // integers
-        case '$': // bulk strings
-        case '*': // array
-            // ctx->filter = ngx_http_redis2_process_reply;
+        case '+': /* simple strings
+                   * +OK
+                   */
+
+        case '-': /* errors
+                   * -ERR wrong number of arguments for 'set' command
+                   */
+
+        case ':': /* integers
+                   * :-1
+                   */
+
+        case '$': /* bulk strings
+                   * $3
+                   * bar
+                   */
+
+        case '*': /* array
+                     *2
+                     $1
+                     0
+                     *3
+                     $9
+                     test-hash
+                     $3
+                     foo
+                     $5
+                     mykey
+                   */
             break;
 
         default:
@@ -167,8 +211,7 @@ found:
 
     u->headers_in.status_n         = NGX_HTTP_OK; /* set http status */
     u->state->status               = NGX_HTTP_OK; /* set http status */
-    u->headers_in.content_length_n = 9;
-
+    u->headers_in.content_length_n = 9;           /* TODO: 这边写死，应该是需要通过计算来完成 */
     return NGX_OK;
 }
 

@@ -10,10 +10,9 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+/* 定义模块location位置的配置信息 */
 typedef struct {
     ngx_flag_t deny;
 } ngx_http_example_access_loc_conf_t;
-
-extern ngx_module_t ngx_http_example_access_module;
 
 #endif

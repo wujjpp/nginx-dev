@@ -15,43 +15,46 @@ static char *ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent
 
 static ngx_command_t ngx_http_example_filter_commands[] = {
 
-    { ngx_string("example_filter_enable_header_filter"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_flag_slot,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_filter_loc_conf_t, enable_header_filter),
-      NULL },
+    {
+        ngx_string("example_filter_enable_header_filter"),                  /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                                 /* 允许的位置和参数控制 */
+        ngx_conf_set_flag_slot,                                             /* 设置函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,                                           /* 指定保存到哪个配置(main,server,location)上 */
+        offsetof(ngx_http_example_filter_loc_conf_t, enable_header_filter), /* 将值保存到哪个属性上 */
+        NULL                                                                /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
-    { ngx_string("example_filter_content_prefix"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_filter_loc_conf_t, prefix_message),
-      NULL },
+    {
+        ngx_string("example_filter_content_prefix"),                  /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                           /* 允许的位置和参数控制 */
+        ngx_conf_set_str_slot,                                        /* 设置函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,                                     /* 指定保存到哪个配置(main,server,location)上 */
+        offsetof(ngx_http_example_filter_loc_conf_t, prefix_message), /* 将值保存到哪个属性上 */
+        NULL                                                          /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
-    { ngx_string("example_filter_content_suffix"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_filter_loc_conf_t, suffix_message),
-      NULL },
+    {
+        ngx_string("example_filter_content_suffix"),                  /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                           /* 允许的位置和参数控制 */
+        ngx_conf_set_str_slot,                                        /* 设置函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,                                     /* 指定保存到哪个配置(main,server,location)上 */
+        offsetof(ngx_http_example_filter_loc_conf_t, suffix_message), /* 将值保存到哪个属性上 */
+        NULL                                                          /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
     ngx_null_command
 };
 
 
 static ngx_http_module_t ngx_http_example_filter_ctx = {
-    NULL,
-    ngx_http_example_filter_init,
-
-    NULL,
-    NULL,
-
-    NULL,
-    NULL,
-
-    ngx_http_example_filter_create_loc_conf,
-    ngx_http_example_filter_merge_loc_conf,
+    NULL,                                    /* pre configuration */
+    ngx_http_example_filter_init,            /* post configuration */
+    NULL,                                    /* create main configuration */
+    NULL,                                    /* merge main configuration */
+    NULL,                                    /* create server configuration */
+    NULL,                                    /* merge server configuration */
+    ngx_http_example_filter_create_loc_conf, /* create location configuration */
+    ngx_http_example_filter_merge_loc_conf,  /* merge location configuration */
 };
 
 
@@ -70,19 +73,30 @@ ngx_module_t ngx_http_example_filter_module = {
     NGX_MODULE_V1_PADDING
 };
 
+/* 下面两个变量用于将当前filter加入到nginx filter链中 */
 static ngx_http_output_header_filter_pt ngx_http_next_header_filter;
 static ngx_http_output_body_filter_pt ngx_http_next_body_filter;
 
 static ngx_int_t
 ngx_http_example_filter_init(ngx_conf_t *cf)
 {
-    ngx_log_debug0(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_init called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "liftcycle: ngx_http_example_filter_init called");
+
+    /* 逻辑说明：
+     *   ngx_http_top_body_filter 和 ngx_http_top_header_filter 这两个变量是系统全局变量，
+     *   在配置完该模块之后，通过将 ngx_http_top_header_filter 保存在 ngx_http_next_header_filter，
+     *   将 ngx_http_top_body_filter 保存在ngx_http_next_body_filter变量上，
+     *   将原 ngx_http_top_header_filter 设置成该模块的 ngx_http_example_header_filter，
+     *   将原 ngx_http_top_body_filter 设置成该模块的 ngx_http_example_body_filter，
+     *   完成调用链插入一个函数指针，
+     *   可以用链表插入节点的模式来理解。
+     */
+    ngx_http_next_header_filter = ngx_http_top_header_filter;
+    ngx_http_top_header_filter  = ngx_http_example_header_filter;
 
     ngx_http_next_body_filter = ngx_http_top_body_filter;
     ngx_http_top_body_filter  = ngx_http_example_body_filter;
 
-    ngx_http_next_header_filter = ngx_http_top_header_filter;
-    ngx_http_top_header_filter  = ngx_http_example_header_filter;
 
     return NGX_OK;
 }
@@ -90,7 +104,7 @@ ngx_http_example_filter_init(ngx_conf_t *cf)
 static void *
 ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
 {
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_create_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "liftcycle: ngx_http_example_filter_create_loc_conf called");
 
     ngx_http_example_filter_loc_conf_t *conf;
 
@@ -109,7 +123,7 @@ ngx_http_example_filter_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_example_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "liftcycle: ngx_http_example_filter_merge_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "liftcycle: ngx_http_example_filter_merge_loc_conf called");
 
     ngx_http_example_filter_loc_conf_t *prev = parent;
     ngx_http_example_filter_loc_conf_t *conf = child;
@@ -189,7 +203,7 @@ ngx_http_example_header_filter(ngx_http_request_t *r)
 static ngx_int_t
 ngx_http_example_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
 {
-    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "liftcycle: ngx_http_example_body_filter called");
+    ngx_log_error(NGX_LOG_NOTICE, r->pool->log, 0, "liftcycle: ngx_http_example_body_filter called");
 
     ngx_chain_t *chain_link = in;
 

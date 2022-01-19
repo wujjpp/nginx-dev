@@ -15,26 +15,32 @@ static char *ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command
 
 static ngx_command_t ngx_http_example_handle_commands[] = {
 
-    { ngx_string("example_handler_response"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,
-      ngx_http_example_handler_response,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      0,
-      NULL },
+    {
+        ngx_string("example_handler_response"), /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_NOARGS,    /* 允许的位置和参数控制 */
+        ngx_http_example_handler_response,      /* 设置函数，这边使用了自定函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,               /* 使用自定设置函数，这个参数就没什么意义了 */
+        0,                                      /* 使用自定设置函数，这个参数就没什么意义了 */
+        NULL                                    /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
-    { ngx_string("example_handler_set_message"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_handler_loc_conf_t, message),
-      NULL },
+    {
+        ngx_string("example_handler_set_message"),              /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,                     /* 允许的位置和参数控制 */
+        ngx_conf_set_str_slot,                                  /* 设置函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,                               /* 指定保存到哪个配置(main,server,location)上 */
+        offsetof(ngx_http_example_handler_loc_conf_t, message), /* 将值保存到哪个属性上 */
+        NULL                                                    /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
-    { ngx_string("example_handler_enable_counter"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
-      ngx_http_example_handler_enable_counter,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_example_handler_loc_conf_t, counter),
-      NULL },
+    {
+        ngx_string("example_handler_enable_counter"),           /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,                      /* 允许的位置和参数控制 */
+        ngx_http_example_handler_enable_counter,                /* 设置函数，这边使用了自定函数，注意：假如自定义函数里面使用 ngx_conf_set_xxx_slot 来设置属性的话，下面的offset必须要填，ngx_conf_set_xxx_slot函数内部通过offset来判定需要初始化哪个个数据 */
+        NGX_HTTP_LOC_CONF_OFFSET,                               /* 指定保存到哪个配置(main,server,location)上 */
+        offsetof(ngx_http_example_handler_loc_conf_t, counter), /* 将值保存到哪个属性上 */
+        NULL                                                    /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
     ngx_null_command
 };
@@ -71,7 +77,7 @@ ngx_module_t ngx_http_example_handler_module = {
 static char *
 ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handler_response called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "lifecycle: ngx_http_example_handler_response called");
 
     ngx_http_core_loc_conf_t *clcf;
 
@@ -98,13 +104,9 @@ ngx_http_example_handler_response(ngx_conf_t *cf, ngx_command_t *cmd, void *conf
 static char *
 ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    // ngx_http_example_handler_loc_conf_t *local_conf = conf;
-
     char *rv = NULL;
 
     rv = ngx_conf_set_flag_slot(cf, cmd, conf);
-
-    // ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "hello_counter:%d", local_conf->counter);
 
     return rv;
 }
@@ -112,7 +114,7 @@ ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void
 static void *
 ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf)
 {
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handle_create_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "lifecycle: ngx_http_example_handle_create_loc_conf called");
 
     ngx_http_example_handler_loc_conf_t *conf;
 
@@ -131,7 +133,7 @@ ngx_http_example_handle_create_loc_conf(ngx_conf_t *cf)
 static char *
 ngx_http_example_handle_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "lifecycle: ngx_http_example_handle_merge_loc_conf called");
+    ngx_log_error(NGX_LOG_NOTICE, cf->log, 0, "lifecycle: ngx_http_example_handle_merge_loc_conf called");
 
     ngx_http_example_handler_loc_conf_t *prev = parent;
     ngx_http_example_handler_loc_conf_t *conf = child;

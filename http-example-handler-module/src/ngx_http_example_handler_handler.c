@@ -8,6 +8,7 @@
 
 static int ngx_hello_visited_times = 0;
 
+/* 输出内容 */
 ngx_int_t
 ngx_http_example_handle_handler(ngx_http_request_t *r)
 {
@@ -38,8 +39,8 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
     path.len = last - path.data;
     // debug_print_ngx_str_t("uri -> path: %s", &path);
     ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "uri -> path: %s", path.data);
-
     /* ======================= 测试代码开始 ======================= */
+
     /* 不需要 request body */
     rc = ngx_http_discard_request_body(r);
 
@@ -51,7 +52,7 @@ ngx_http_example_handle_handler(ngx_http_request_t *r)
 
 
     if (conf->message.len == 0) {
-        ngx_log_error(NGX_LOG_EMERG, r->connection->log, 0, "message is empty!");
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "message is empty!");
         return NGX_DECLINED;
     }
 

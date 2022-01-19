@@ -4,29 +4,31 @@
  */
 
 
-#include "ngx_http_redis_module.h"
-#include "ngx_http_redis_handler.h"
+#include "ngx_http_example_upstream_module.h"
+#include "ngx_http_example_upstream_handler.h"
 
 
 static void *
-ngx_http_redis_create_loc_conf(ngx_conf_t *cf);
+ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf);
 static char *
-ngx_http_redis_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
+ngx_http_example_upstream_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
 static char *
 ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_http_redis_commands[] = {
+
     { ngx_string("redis_pass"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1 | NGX_CONF_TAKE2 | NGX_CONF_TAKE3,
       ngx_http_redis_pass,
       NGX_HTTP_LOC_CONF_OFFSET,
       0,
       NULL },
+
     ngx_null_command
 };
 
-static ngx_http_module_t ngx_http_redis_ctx = {
+static ngx_http_module_t ngx_http_example_upstream_ctx = {
     NULL,
     NULL,
 
@@ -36,33 +38,32 @@ static ngx_http_module_t ngx_http_redis_ctx = {
     NULL,
     NULL,
 
-    ngx_http_redis_create_loc_conf,
-    ngx_http_redis_merge_loc_conf,
+    ngx_http_example_upstream_create_loc_conf,
+    ngx_http_example_upstream_merge_loc_conf,
 };
 
 
-ngx_module_t ngx_http_redis_module = {
+ngx_module_t ngx_http_example_upstream_module = {
     NGX_MODULE_V1,
-    &ngx_http_redis_ctx,     /* module context */
-    ngx_http_redis_commands, /* module directives */
-    NGX_HTTP_MODULE,         /* module type */
-    NULL,                    /* init master */
-    NULL,                    /* init module */
-    NULL,                    /* init process */
-    NULL,                    /* init thread */
-    NULL,                    /* exit thread */
-    NULL,                    /* exit process */
-    NULL,                    /* exit master */
+    &ngx_http_example_upstream_ctx, /* module context */
+    ngx_http_redis_commands,        /* module directives */
+    NGX_HTTP_MODULE,                /* module type */
+    NULL,                           /* init master */
+    NULL,                           /* init module */
+    NULL,                           /* init process */
+    NULL,                           /* init thread */
+    NULL,                           /* exit thread */
+    NULL,                           /* exit process */
+    NULL,                           /* exit master */
     NGX_MODULE_V1_PADDING
 };
 
-
 static void *
-ngx_http_redis_create_loc_conf(ngx_conf_t *cf)
+ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf)
 {
-    ngx_http_redis_loc_conf_t *conf;
+    ngx_http_example_upstream_loc_conf_t *conf;
 
-    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_redis_loc_conf_t));
+    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_example_upstream_loc_conf_t));
     if (conf == NULL) {
         return NULL;
     }
@@ -96,10 +97,10 @@ ngx_http_redis_create_loc_conf(ngx_conf_t *cf)
 }
 
 static char *
-ngx_http_redis_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
+ngx_http_example_upstream_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 {
-    ngx_http_redis_loc_conf_t *prev = parent;
-    ngx_http_redis_loc_conf_t *conf = child;
+    ngx_http_example_upstream_loc_conf_t *prev = parent;
+    ngx_http_example_upstream_loc_conf_t *conf = child;
 
     ngx_conf_merge_ptr_value(conf->upstream.local,
                              prev->upstream.local, NULL);
@@ -111,13 +112,13 @@ ngx_http_redis_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
                               prev->upstream.next_upstream_tries, 0);
 
     ngx_conf_merge_msec_value(conf->upstream.connect_timeout,
-                              prev->upstream.connect_timeout, 60000);
+                              prev->upstream.connect_timeout, 50000);
 
     ngx_conf_merge_msec_value(conf->upstream.send_timeout,
-                              prev->upstream.send_timeout, 60000);
+                              prev->upstream.send_timeout, 50000);
 
     ngx_conf_merge_msec_value(conf->upstream.read_timeout,
-                              prev->upstream.read_timeout, 60000);
+                              prev->upstream.read_timeout, 50000);
 
     ngx_conf_merge_msec_value(conf->upstream.next_upstream_timeout,
                               prev->upstream.next_upstream_timeout, 0);
@@ -147,11 +148,12 @@ ngx_http_redis_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
 static char *
 ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 {
-    ngx_http_redis_loc_conf_t *mlcf = conf;
 
     ngx_str_t *value;
     ngx_url_t u;
     ngx_http_core_loc_conf_t *clcf;
+
+    ngx_http_example_upstream_loc_conf_t *mlcf = conf;
 
     if (mlcf->upstream.upstream) {
         return "is duplicate";
@@ -171,14 +173,58 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
     clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
 
-    clcf->handler = ngx_http_redis_handler;
+    clcf->handler = ngx_http_example_upstream_handler;
 
     if (clcf->name.len && clcf->name.data[clcf->name.len - 1] == '/') {
         clcf->auto_redirect = 1;
     }
 
-    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "--------------------------------------------------");
-    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cf->pool->log, 0, "================================================");
+    /* db index */
+    if (cf->args->nelts >= 3) {
+        mlcf->db = ngx_atoi(value[2].data, value[2].len);
+    } else {
+        mlcf->db = 0;
+    }
+
+    /* password */
+    if (cf->args->nelts >= 4) {
+        /*
+            u_char *src, *dst;
+
+            u_char buffer[128] = { 0 };
+            ngx_uint_t len     = value[3].len;
+            src                = value[3].data;
+            dst                = buffer;
+
+            ngx_unescape_uri(&dst, &src, len + 1, 0);
+
+            ngx_str_set(&mlcf->password, (u_char *)buffer);
+
+            // 这个是临时解决方案，先这么干，需要弄明白为什么 (u_char *)执行sizeof()得到的值不对
+            mlcf->password.len = strlen((const char *)buffer);
+        */
+
+        mlcf->password = value[3];
+    } else {
+        ngx_str_null(&mlcf->password);
+    }
+
+    ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "addr:%s, auth:%s, auth_len:%d, db:%d",
+                  u.url.data,
+                  mlcf->password.len > 0 ? mlcf->password.data : (u_char *)"",
+                  mlcf->password.len,
+                  mlcf->db);
+
+    // // 查看变量
+    // ngx_http_core_main_conf_t *cmcf;
+    // ngx_uint_t i;
+    // ngx_http_variable_t *v;
+    // cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
+
+    // v = cmcf->variables.elts;
+    // for (i = 0; i < cmcf->variables.nelts; ++i) {
+    //     ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "variable_name: %s", v[i].name.data);
+    // }
 
     return NGX_CONF_OK;
 }

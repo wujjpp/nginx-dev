@@ -1,0 +1,27 @@
+ngx_addon_name=ngx_http_example_upstream_module
+
+EXAMPLE_UPSTREAM_SRCS="                                                         \
+                $ngx_addon_dir/src/ngx_http_example_upstream_handler.c           \
+                $ngx_addon_dir/src/ngx_http_example_upstream_module.c             \
+                "
+
+EXAMPLE_UPSTREAM_DEPS="                                                         \
+                $ngx_addon_dir/src/ddebug.h                           \
+                $ngx_addon_dir/src/ngx_http_example_upstream_handler.h            \
+                $ngx_addon_dir/src/ngx_http_example_upstream_module.h              \
+                "
+
+if test -n "$ngx_module_link"; then
+    ngx_module_type=HTTP
+    ngx_module_name=$ngx_addon_name
+    ngx_module_incs=
+    ngx_module_deps="$EXAMPLE_UPSTREAM_DEPS"
+    ngx_module_srcs="$EXAMPLE_UPSTREAM_SRCS"
+    ngx_module_libs=
+
+    . auto/module
+else
+    HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
+    NGX_ADDON_SRCS="$NGX_ADDON_SRCS $EXAMPLE_UPSTREAM_SRCS"
+    NGX_ADDON_DEPS="$NGX_ADDON_DEPS $EXAMPLE_UPSTREAM_DEPS"
+fi

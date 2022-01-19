@@ -21,7 +21,6 @@
             u_char buffer[NGX_MAX_ERROR_STR] = { 0 }; \
             ngx_sprintf(buffer, fmt, (str)->data);    \
             ngx_write_stdout((char *)buffer);         \
-            ngx_write_stdout("\n");                   \
         }
 
 #    define debug_print(fmt, ...)                     \
@@ -29,7 +28,6 @@
             u_char buffer[NGX_MAX_ERROR_STR] = { 0 }; \
             ngx_sprintf(buffer, fmt, __VA_ARGS__);    \
             ngx_write_stdout((char *)buffer);         \
-            ngx_write_stdout("\n");                   \
         }
 
 #    define debug_print_str(str)    \

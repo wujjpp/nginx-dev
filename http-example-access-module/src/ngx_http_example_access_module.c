@@ -24,7 +24,7 @@ static ngx_command_t ngx_http_example_access_commands[] = {
         NULL                                                /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
     },
 
-    ngx_null_command
+    ngx_null_command /* 必须要以ngx_null_command作为数组的最后一个元素 */
 };
 
 /* 创建、合并3种配置文件（main, server, location）钩子函数 */

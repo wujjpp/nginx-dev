@@ -8,38 +8,34 @@
 #include "ngx_http_example_upstream_handler.h"
 
 
-static void *
-ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf);
-static char *
-ngx_http_example_upstream_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
+static void *ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf);
+static char *ngx_http_example_upstream_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child);
 
-static char *
-ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
+static char *ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_http_redis_commands[] = {
 
-    { ngx_string("redis_pass"),
-      NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1 | NGX_CONF_TAKE2 | NGX_CONF_TAKE3,
-      ngx_http_redis_pass,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      0,
-      NULL },
+    {
+        ngx_string("redis_pass"),                                             /* 指令名称 */
+        NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1 | NGX_CONF_TAKE2 | NGX_CONF_TAKE3, /* 允许的位置和参数控制 */
+        ngx_http_redis_pass,                                                  /* 设置函数，这边使用了自定函数 */
+        NGX_HTTP_LOC_CONF_OFFSET,                                             /* 使用自定设置函数，这个参数就没什么意义了 */
+        0,                                                                    /* 使用自定设置函数，这个参数就没什么意义了 */
+        NULL                                                                  /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
+    },
 
-    ngx_null_command
+    ngx_null_command /*必须要以ngx_null_command作为数组的最后一个元素*/
 };
 
 static ngx_http_module_t ngx_http_example_upstream_ctx = {
-    NULL,
-    NULL,
-
-    NULL,
-    NULL,
-
-    NULL,
-    NULL,
-
-    ngx_http_example_upstream_create_loc_conf,
-    ngx_http_example_upstream_merge_loc_conf,
+    NULL,                                      /* pre configuration */
+    NULL,                                      /* post configuration */
+    NULL,                                      /* create main configuration */
+    NULL,                                      /* merge main configuration */
+    NULL,                                      /* create server configuration */
+    NULL,                                      /* merge server configuration */
+    ngx_http_example_upstream_create_loc_conf, /* create location configuration */
+    ngx_http_example_upstream_merge_loc_conf   /* merge location configuration */
 };
 
 

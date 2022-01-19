@@ -42,21 +42,19 @@ static ngx_command_t ngx_http_example_handle_commands[] = {
         NULL                                                    /* 一般为NULL, 但是可以参考ngx_http_memcached模块 */
     },
 
-    ngx_null_command
+    ngx_null_command /* 必须要以ngx_null_command作为数组的最后一个元素 */
 };
 
+
 static ngx_http_module_t ngx_http_example_handle_ctx = {
-    NULL,
-    NULL,
-
-    NULL,
-    NULL,
-
-    NULL,
-    NULL,
-
-    ngx_http_example_handle_create_loc_conf,
-    ngx_http_example_handle_merge_loc_conf
+    NULL,                                    /* pre configuration */
+    NULL,                                    /* post configuration */
+    NULL,                                    /* create main configuration */
+    NULL,                                    /* merge main configuration */
+    NULL,                                    /* create server configuration */
+    NULL,                                    /* merge server configuration */
+    ngx_http_example_handle_create_loc_conf, /* create location configuration */
+    ngx_http_example_handle_merge_loc_conf   /* merge location configuration */
 };
 
 ngx_module_t ngx_http_example_handler_module = {
@@ -106,6 +104,7 @@ ngx_http_example_handler_enable_counter(ngx_conf_t *cf, ngx_command_t *cmd, void
 {
     char *rv = NULL;
 
+    /* 通过这种方式设置模块配置参数，必须在定义指令时，明确offset, 可参考ngx_conf_file.c#L1034-1038 */
     rv = ngx_conf_set_flag_slot(cf, cmd, conf);
 
     return rv;

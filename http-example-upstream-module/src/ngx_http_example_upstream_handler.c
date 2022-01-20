@@ -105,7 +105,19 @@ ngx_http_example_upstream_create_request(ngx_http_request_t *r)
 
     ngx_buf_t *b;
     ngx_chain_t *cl;
-    ngx_str_t command;
+    ngx_http_variable_value_t *vv;
+    ngx_http_example_upstream_loc_conf_t *mlcf;
+
+    mlcf = ngx_http_get_module_loc_conf(r, ngx_http_example_upstream_module);
+
+    // 根据变量index, 获取具体变量结构体
+    vv = ngx_http_get_indexed_variable(r, mlcf->index);
+
+    if (vv == NULL || vv->not_found || vv->len == 0) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "the \"$redis_command\" variable is not set");
+        return NGX_ERROR;
+    }
+
 
     b = ngx_calloc_buf(r->pool);
     if (b == NULL) {
@@ -117,11 +129,8 @@ ngx_http_example_upstream_create_request(ngx_http_request_t *r)
         return NGX_ERROR;
     }
 
-    // TODO: 先写死一条命令, 需要改成从变量中获取
-    ngx_str_set(&command, "get foo\r\n");
-
-    b->pos    = command.data;
-    b->last   = command.data + command.len;
+    b->pos    = vv->data;
+    b->last   = vv->data + vv->len;
     b->memory = 1;
 
     cl->buf  = b;
@@ -165,22 +174,22 @@ found:
     ngx_str_t s;
     s.data = b->pos;
     s.len  = b->last - b->pos;
-    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "response: %V", &s);
+    ngx_log_error(NGX_LOG_NOTICE, r->connection->log, 0, "response: %V", &s);
 
     switch (chr) {
-        case '+': /* simple strings
+        case '+': /* simple string
                    * +OK
                    */
 
-        case '-': /* errors
+        case '-': /* error
                    * -ERR wrong number of arguments for 'set' command
                    */
 
-        case ':': /* integers
+        case ':': /* integer
                    * :-1
                    */
 
-        case '$': /* bulk strings
+        case '$': /* bulk string
                    * $3
                    * bar
                    */
@@ -209,9 +218,9 @@ found:
             return NGX_HTTP_UPSTREAM_INVALID_HEADER;
     }
 
-    u->headers_in.status_n         = NGX_HTTP_OK; /* set http status */
-    u->state->status               = NGX_HTTP_OK; /* set http status */
-    u->headers_in.content_length_n = 9;           /* TODO: 这边写死，应该是需要通过计算来完成 */
+    u->headers_in.status_n         = NGX_HTTP_OK;      /* set http status */
+    u->state->status               = NGX_HTTP_OK;      /* set http status */
+    u->headers_in.content_length_n = b->last - b->pos; /* 设置content length */
     return NGX_OK;
 }
 

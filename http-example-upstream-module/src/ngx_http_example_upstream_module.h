@@ -13,6 +13,7 @@
 
 typedef struct {
     ngx_http_upstream_conf_t upstream;
+    ngx_int_t index;
     ngx_str_t password;
     ngx_uint_t db;
 } ngx_http_example_upstream_loc_conf_t;

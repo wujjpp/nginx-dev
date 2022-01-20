@@ -54,6 +54,8 @@ ngx_module_t ngx_http_example_upstream_module = {
     NGX_MODULE_V1_PADDING
 };
 
+static ngx_str_t ngx_http_redis_command_key = ngx_string("redis_command");
+
 static void *
 ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf)
 {
@@ -88,6 +90,8 @@ ngx_http_example_upstream_create_loc_conf(ngx_conf_t *cf)
     conf->upstream.pass_request_headers = 0;
     conf->upstream.pass_request_body    = 0;
     conf->upstream.force_ranges         = 1;
+
+    conf->index = NGX_CONF_UNSET;
 
     return conf;
 }
@@ -138,6 +142,10 @@ ngx_http_example_upstream_merge_loc_conf(ngx_conf_t *cf, void *parent, void *chi
         conf->upstream.upstream = prev->upstream.upstream;
     }
 
+    if (conf->index == NGX_CONF_UNSET) {
+        conf->index = prev->index;
+    }
+
     return NGX_CONF_OK;
 }
 
@@ -175,6 +183,15 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         clcf->auto_redirect = 1;
     }
 
+    /*
+     * 将 $redis_command 变量对应的index保存到index属性上，
+     * 后面在 create_request 阶段通过 ngx_http_get_indexed_variable(r, mlcf->index), 获取变量对应的值
+     */
+    mlcf->index = ngx_http_get_variable_index(cf, &ngx_http_redis_command_key);
+    if (mlcf->index == NGX_ERROR) {
+        return NGX_CONF_ERROR;
+    }
+
     /* db index */
     if (cf->args->nelts >= 3) {
         mlcf->db = ngx_atoi(value[2].data, value[2].len);
@@ -204,6 +221,7 @@ ngx_http_redis_pass(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     } else {
         ngx_str_null(&mlcf->password);
     }
+
 
     ngx_log_error(NGX_LOG_NOTICE, cf->pool->log, 0, "addr:%s, auth:%s, auth_len:%d, db:%d",
                   u.url.data,

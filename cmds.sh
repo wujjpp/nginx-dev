@@ -9,5 +9,6 @@
   --add-dynamic-module=/root/nginx-dev/http-example-handler-module \
   --add-dynamic-module=/root/nginx-dev/http-example-access-module \
   --add-dynamic-module=/root/nginx-dev/http-example-filter-module \
-  --add-dynamic-module=/root/nginx-dev/http-example-upstream-module
+  --add-dynamic-module=/root/nginx-dev/http-example-upstream-module \
+  --add-dynamic-module=/root/nginx-dev/http-access2-module
   

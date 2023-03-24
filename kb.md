@@ -125,6 +125,56 @@ for (q = ngx_queue_head(&values); q != ngx_queue_sentinel(&values); q = ngx_queu
 2023/03/24 17:35:25 [error] 15235#96652: *1 &f->value: bar
 ```
 
+### ngx_rbtree_t
+
+```c
+ngx_int_t           i;
+ngx_rbtree_t        tree;
+ngx_rbtree_node_t   sentinel;
+ngx_str_node_t     *node;
+ngx_str_node_t      nodes[5];
+
+ngx_rbtree_init(&tree, &sentinel, ngx_str_rbtree_insert_value);
+
+ngx_str_set(&nodes[0].str, "node-0");
+nodes[0].node.key = 10;
+
+ngx_str_set(&nodes[1].str, "node-1");
+nodes[1].node.key = 6;
+
+ngx_str_set(&nodes[2].str, "node-2");
+nodes[2].node.key = 8;
+
+ngx_str_set(&nodes[3].str, "node-3");
+nodes[3].node.key = 100;
+
+ngx_str_set(&nodes[4].str, "node-4");
+nodes[4].node.key = 7;
+
+for (i = 0; i < 5; ++i){
+    ngx_rbtree_insert(&tree, &nodes[i].node);
+}
+
+node = (ngx_str_node_t *)ngx_rbtree_min(tree.root, &sentinel);
+ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "min node: %V, key: %d", &(node->str), node->node.key);
+
+
+ngx_str_t search_key = ngx_string("node-2");
+
+node = (ngx_str_node_t *)ngx_str_rbtree_lookup(&tree, &search_key, 8);
+
+if(node != NULL) {
+    ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node: %V, key: %d", &node->str, node->node.key);
+} else {
+    ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node: NOT FOUND");
+}
+```
+
+```shell
+2023/03/24 18:59:48 [error] 29381#187652: *2 min node: node-1, key: 6
+2023/03/24 18:59:48 [error] 29381#187652: *2 search node: node-2, key: 8
+```
+
 ## list header
 
 ```C

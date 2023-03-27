@@ -127,6 +127,82 @@ for (q = ngx_queue_head(&values); q != ngx_queue_sentinel(&values); q = ngx_queu
 
 ### ngx_rbtree_t
 
+#### base
+
+```c
+ngx_rbtree_node_t *
+ngx_value_rbtree_lookup(ngx_rbtree_t *rbtree, uint32_t hash)
+{
+    ngx_int_t           rc;
+    ngx_rbtree_node_t  *n;
+    ngx_rbtree_node_t  *node, *sentinel;
+
+    node = rbtree->root;
+    sentinel = rbtree->sentinel;
+
+    while (node != sentinel) {
+
+        n = (ngx_rbtree_node_t *) node;
+
+        if (hash != node->key) {
+            node = (hash < node->key) ? node->left : node->right;
+            continue;
+        }
+        return n;
+    }
+
+    return NULL;
+}
+
+static ngx_int_t
+ngx_rbtree_test(ngx_http_request_t *r, ...)
+{
+    ngx_int_t           i;
+    ngx_rbtree_t        tree;
+    ngx_rbtree_node_t   sentinel;
+    ngx_rbtree_node_t  *node;
+
+    ngx_rbtree_init(&tree, &sentinel, ngx_rbtree_insert_value);
+
+    for(i = 1; i <= 5; ++i) {
+        node = ngx_palloc(r->pool, sizeof(ngx_rbtree_node_t));
+        node->key = i;
+
+        ngx_rbtree_insert(&tree, node);
+    }
+
+    node = ngx_rbtree_min(tree.root, &sentinel);
+    ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "min node key: %d", node->key);
+
+    node = ngx_value_rbtree_lookup(&tree, 2);
+
+    if(node != NULL) {
+        ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node key: %d", node->key);
+
+        ngx_rbtree_delete(&tree, node);
+
+        node = ngx_value_rbtree_lookup(&tree, 2);
+        if(node != NULL) {
+            ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node after delete, key: %d", node->key);
+        } else {
+            ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node after delete: NOT FOUND");
+        }
+    } else {
+        ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node: NOT FOUND");
+    }
+}
+```
+
+```shell
+
+2023/03/27 18:29:07 [error] 71140#892965: *3 min node key: 1
+2023/03/27 18:29:07 [error] 71140#892965: *3 search node key: 2
+2023/03/27 18:29:07 [error] 71140#892965: *3 search node after delete: NOT FOUND
+
+```
+
+#### ngx_str_rbtree
+
 ```c
 ngx_int_t           i;
 ngx_rbtree_t        tree;

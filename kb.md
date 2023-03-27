@@ -161,14 +161,26 @@ node = (ngx_str_node_t *)ngx_str_rbtree_lookup(&tree, &search_key, 2);
 
 if(node != NULL) {
     ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node: %V, key: %d", &node->str, node->node.key);
+
+    ngx_rbtree_delete(&tree, &node->node);
+
+    node = (ngx_str_node_t *)ngx_str_rbtree_lookup(&tree, &search_key, 2);
+    if(node != NULL) {
+        ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node after delete: %V, key: %d", &node->str, node->node.key);
+    } else {
+        ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node after delete: NOT FOUND");
+    }
 } else {
     ngx_log_error(NGX_LOG_ERR, r->pool->log, 0, "search node: NOT FOUND");
 }
 ```
 
 ```shell
-2023/03/27 17:28:50 [error] 67488#836533: *1 min node: node-1, key: 1
-2023/03/27 17:28:50 [error] 67488#836533: *1 search node: node-2, key: 2
+
+2023/03/27 17:48:34 [error] 68855#856319: *2 min node: node-1, key: 1
+2023/03/27 17:48:34 [error] 68855#856319: *2 search node: node-2, key: 2
+2023/03/27 17:48:34 [error] 68855#856319: *2 search node after delete: NOT FOUND
+
 ```
 
 ## list header
